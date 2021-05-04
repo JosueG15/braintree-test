@@ -22,11 +22,34 @@ const gateway = new braintree.BraintreeGateway({
   privateKey: process.env.PRIVATE_KEY,
 });
 
-app.get('/', (req, res) => {
+app.post('/customer', (req, res) => {
+  gateway.customer.create({
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    company: req.body.company,
+    email: req.body.email,
+    phone: req.body.phone,
+    creditCard: {
+      cardholderName: req.body.cardholderName,
+      cvv: req.body.cvv,
+      expirationMonth: req.body.expirationMonth,
+      expirationYear: req.body.expirationYear,
+      number: req.body.number,
+      options: {
+        verifyCard: true,
+      }
+    },
+    paymentMethodNonce: req.body.paymentMethodNonce,
+  }).then(response => {
+    if(response.success) return res.json(response) // Sending customer information
+    return res.status(400).send(response) // Sending error message
+  })
+})
+
+app.post('/token', (req, res) => {
     gateway.clientToken.generate({
-        customerId: 101219085
+        customerId: req.body.customerId,
       }).then(response => {
-        // pass clientToken to your front-end
         const clientToken = response.clientToken;
         res.json(clientToken);
       }).catch((error) => {
@@ -35,35 +58,17 @@ app.get('/', (req, res) => {
 })
 
 app.post("/checkout", async (req, res) => {
-    const nonceFromTheClient = req.body.payment_method_nonce;
-    const nonce_create = await gateway.paymentMethodNonce.create('7xfssqg');
+    const paymentToken = req.body.paymentToken
+    const nonce_create = await gateway.paymentMethodNonce.create(paymentToken);
     const nonce = nonce_create.paymentMethodNonce.nonce;
-    // Use payment method nonce here
+
     gateway.subscription.create({
         paymentMethodNonce: nonce,
-        planId: '6fsm',
+        planId:  req.body.planId,
       }).then(result => { 
         res.json(result);
       });
-
-    // gateway.transaction.sale({
-    //     amount: "10.00",
-    //     paymentMethodNonce: nonceFromTheClient,
-    //     options: {
-    //       submitForSettlement: true
-    //     }
-    //   }).then(transaccionResult => {
-    //       res.json(transaccionResult);
-    //    });
   });
-
-// app.use('/api', apiControllers);
-
-//  app.use(express.static(path.join(__dirname, 'client')));
-// app.use(express.static(path.join(__dirname, 'logo')));
-// app.get('*', (req, res) => {
-//   res.sendFile(path.join(`${__dirname}/client/index.html`));
-// }); 
 
 app.listen(port, () => console.log(`Server started on port: ${port}`));
 
