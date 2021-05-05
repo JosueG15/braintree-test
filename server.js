@@ -46,6 +46,14 @@ app.post('/customer', (req, res) => {
   })
 })
 
+app.get('/customer/:id', (req, res) => {
+  gateway.customer.find(req.params.id).then((customer) => {
+    return res.json(customer)
+  }).catch(error => {
+    return res.status(404).send(error)
+  })
+})
+
 app.post('/token', (req, res) => {
     gateway.clientToken.generate({
         customerId: req.body.customerId,
