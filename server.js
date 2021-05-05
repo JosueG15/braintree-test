@@ -45,6 +45,11 @@ app.post('/customer', (req, res) => {
   })
 })
 
+app.get('/plans', async (req, res) => {
+  const plans = await gateway.plan.all();
+  return res.json(plans);
+})
+
 app.get('/customer/:id', (req, res) => {
   gateway.customer.find(req.params.id).then((customer) => {
     return res.json(customer)
