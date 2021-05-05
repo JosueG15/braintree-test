@@ -32,8 +32,7 @@ app.post('/customer', (req, res) => {
     creditCard: {
       cardholderName: req.body.cardholderName,
       cvv: req.body.cvv,
-      expirationMonth: req.body.expirationMonth,
-      expirationYear: req.body.expirationYear,
+      expirationDate: req.body.expirationDate,
       number: req.body.cardNumber,
       options: {
         verifyCard: true,
