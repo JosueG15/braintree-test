@@ -89,6 +89,10 @@ app.post("/checkout", async (req, res) => {
 
   return res.status(404).json({})
 })
+
+app.post('/subscriptions/:id/cancel', (req, res) => {
+  gateway.subscription.cancel(req.params.subscriptionId).then(result => res.json(result)).catch(error => res.status(404).send(error))
+})
    
 
 app.listen(port, () => console.log(`Server started on port: ${port}`));
