@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const braintree = require('braintree');
 const config = require('./config/index')(process.env.NODE_ENV);
 const cors = require('cors');
+const { Subscription } = require('braintree');
 
 const port = process.env.PORT || 3001;
 const app = express();
@@ -70,6 +71,10 @@ app.post('/token', (req, res) => {
 })
 
 app.post("/checkout", async (req, res) => {
+  const creditCard = await gateway.creditCard.find(req.body.paymentToken)
+  const activeSubscriptions = creditCard.subscriptions.filter(subscription => subscription.status === 'Active')
+
+  if(activeSubscriptions.length === 0) {
     const paymentToken = req.body.paymentToken
     const nonce_create = await gateway.paymentMethodNonce.create(paymentToken);
     const nonce = nonce_create.paymentMethodNonce.nonce;
@@ -80,7 +85,11 @@ app.post("/checkout", async (req, res) => {
       }).then(result => { 
         res.json(result);
       });
-  });
+  } 
+
+  return res.status(404).json({})
+})
+   
 
 app.listen(port, () => console.log(`Server started on port: ${port}`));
 
